@@ -11,12 +11,16 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @RestController
 @RequestMapping("/api/support")
 public class SupportController {
 
     private final AgentGraph supportGraph;
+    // Limit to 5 concurrent users
+    private final AtomicInteger activeRequests = new AtomicInteger(0);
+    private static final int MAX_CONCURRENT_REQUESTS = 5;
 
     public SupportController(AgentGraph supportGraph) {
         this.supportGraph = supportGraph;
@@ -26,6 +30,11 @@ public class SupportController {
     public Flux<String> processSupportTicket(@RequestBody Map<String, String> request) {
         String message = request.getOrDefault("message", "");
         
+        if (activeRequests.incrementAndGet() > MAX_CONCURRENT_REQUESTS) {
+            activeRequests.decrementAndGet();
+            return Flux.just("{\"type\":\"error\", \"message\":\"The demo is currently overloaded (>5 concurrent users). Please try again later or run it locally with your own Mistral API Key!\"}");
+        }
+
         AgentContext context = AgentContext.empty()
                 .withMessage(new UserMessage(message));
 
@@ -47,6 +56,10 @@ public class SupportController {
                                 text, intent, sentiment, orderStatus, decision);
                     }
                     return "{\"type\":\"ping\"}";
-                });
+                })
+                .onErrorResume(e -> {
+                    return Flux.just("{\"type\":\"error\", \"message\":\"API Provider Error: Quota exceeded or LLM service unavailable. Clone the repo to run with your own key!\"}");
+                })
+                .doFinally(signalType -> activeRequests.decrementAndGet());
     }
 }

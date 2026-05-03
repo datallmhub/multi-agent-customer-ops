@@ -2,11 +2,9 @@ spring:
   application:
     name: multi-agent-customer-ops
   ai:
-    openai:
-      # Defaults to Groq for the demo if user provides API key, otherwise they can override via env var
-      api-key: ${GROQ_API_KEY:gsk_placeholder}
-      base-url: https://api.groq.com/openai/v1
+    mistralai:
+      api-key: ${MISTRAL_API_KEY:placeholder}
       chat:
         options:
-          model: llama3-8b-8192
+          model: open-mistral-nemo
           temperature: 0.1
