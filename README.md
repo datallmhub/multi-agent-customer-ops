@@ -23,6 +23,7 @@ The state is strongly typed (`SupportState`) and passed automatically across nod
 
 ## Technical Stack
 
+
 - **Core**: [Spring Boot 3.2.4](https://spring.io/projects/spring-boot)
 - **AI Orchestration**: [spring-agent-flow](https://github.com/datallmhub/spring-agent-flow) (Graph-based Multi-Agent framework)
 - **LLM Integration**: [Spring AI](https://spring.io/projects/spring-ai) (Mistral AI / Groq / OpenAI)
